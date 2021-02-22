@@ -14,8 +14,6 @@ class Enforcer
 
     protected $_url = "";
 
-    protected $_belongSystem = "";
-
     /**
      * Enforcer constructor.
      * @param string $url
