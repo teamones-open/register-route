@@ -2,7 +2,7 @@
 
 namespace teamones\registerRoute;
 
-class Client
+class Enforcer
 {
 
 }
