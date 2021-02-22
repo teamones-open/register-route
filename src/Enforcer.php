@@ -42,6 +42,7 @@ class Enforcer
     /**
      * 注册Teamones框架路由
      * @param $routes
+     * @param string $belongSystem
      * @param string $method
      */
     public function registerTeamonesFramework($routes, $belongSystem = '', $method = '')
@@ -73,11 +74,58 @@ class Enforcer
 
     /**
      * 注册webman框架路由
-     * @param $routes
+     * @param $routeConfig
+     * @param string $belongSystem
      * @param string $method
      */
-    public function registerWebmanFramework($routes, $belongSystem = '', $method = '')
+    public function registerWebmanFramework($routeConfig, $belongSystem = '', $method = '')
     {
+        $handle = fopen($routeConfig, "r");//读取二进制文件时，需要将第二个参数设置成'rb'
 
+        //通过filesize获得文件大小，将整个文件一下子读到一个字符串中
+        $contents = fread($handle, filesize($routeConfig));
+        fclose($handle);
+
+        // 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'
+        $matchRegexs = [
+            'Route::any' => ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+            'Route::get' => ['GET'],
+            'Route::post' => ['POST'],
+            'Route::put' => ['PUT'],
+            'Route::delete' => ['DELETE'],
+            'Route::patch' => ['PATCH'],
+            'Route::head' => ['HEAD'],
+            'Route::options' => ['OPTIONS'],
+        ];
+
+        $routes = [];
+        foreach ($matchRegexs as $key => $methods) {
+            preg_match_all("/{$key}\('(.*?)',/", $contents, $m);
+
+            if (!empty($m[1])) {
+                $routes[$key] = [
+                    'methods' => $methods,
+                    'routes' => $m[1]
+                ];
+            }
+        }
+
+
+        $updateData = [];
+        if (!empty($routes) && is_array($routes)) {
+            foreach ($routes as $param) {
+                foreach ($param['methods'] as $routeMethod) {
+                    foreach ($param['routes'] as $route) {
+                        $updateData[] = [
+                            "belong_system" => $belongSystem, // 所属系统
+                            "record" => $route, // 路由记录
+                            "method" => !empty($method) ? strtoupper($method) : strtoupper($routeMethod) // 请求方式
+                        ];
+                    }
+                }
+            }
+        }
+
+        $this->registerRemote($updateData);
     }
 }
