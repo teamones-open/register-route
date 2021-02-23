@@ -62,7 +62,8 @@ class Enforcer
                 }
             }
 
-            $ExistRoutes = Db::table('route')
+            $ExistRoutes = Db::connect('route_register')
+                ->table('route')
                 ->whereIn("belong_system", $filterBelongSystem)
                 ->whereIn("method", $filterMethod)
                 ->whereIn("record", $filterRecord)
@@ -90,10 +91,10 @@ class Enforcer
                 return [];
             }
 
-            Db::table('route')->insertAll($saveData);
+            Db::connect('route_register')->table('route')->insertAll($saveData);
 
             // 处理完释放连接
-            Db::connect()->close();
+            Db::connect('route_register')->close();
         } catch (\Exception $e) {
             var_dump($e->getMessage());
         }
@@ -134,7 +135,7 @@ class Enforcer
 
                 $routeMethods = [];
                 if (is_array($param[1]) && !empty($param[1]['method'])) {
-                    $routeMethods = explode(',', $param[1]['method']);
+                    $routeMethods = explode('|', $param[1]['method']);
                 } else {
                     $routeMethods = ['POST'];
                 }
