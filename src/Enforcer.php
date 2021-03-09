@@ -31,11 +31,14 @@ class Enforcer
 
     /**
      * 通过数据库直接更新记录
+     * @param $data
+     * @return array
      */
     protected function saveRecordByDB($data)
     {
         try {
             $dbConfig = config('thinkorm');
+            $dbConfig['connections']['route_register'] = $dbConfig['connections']['mysql'];
             $dbConfig['break_reconnect'] = false;
             Db::setConfig($dbConfig);
 
